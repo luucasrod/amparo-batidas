@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Amparo Batidas</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
@@ -21,6 +21,9 @@
       color: var(--dark);
       min-height: 100vh;
       overflow-x: hidden;
+    }
+    html, body {
+      touch-action: manipulation;
     }
     .screen { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
     .screen.active { display: block; }
