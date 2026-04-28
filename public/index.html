@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amparo Batidas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #2b4a2b;
+      --coral: #e8603c;
+      --wood: #c4a882;
+      --cream: #f5f0e8;
+      --dark: #1a1a1a;
+      --muted: #6a635a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--cream);
+      font-family: Syne, system-ui, sans-serif;
+      color: var(--dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .screen { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #screen-menu { background: #faf7f1; }
+    .hero {
+      background: var(--moss);
+      padding: 48px 24px 40px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 3px solid var(--wood);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      bottom: -28px;
+      left: -8%;
+      width: 116%;
+      height: 48px;
+      background: #faf7f1;
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+    .logo {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 2rem;
+      color: var(--cream);
+      position: relative;
+      z-index: 1;
+    }
+    .logo span { color: var(--wood); font-style: italic; }
+    .hook {
+      color: rgba(245, 240, 232, 0.78);
+      font-size: 1.05rem;
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+      font-weight: 500;
+    }
+    .hero-sub {
+      color: rgba(245, 240, 232, 0.6);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: var(--coral);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-top: 16px;
+    }
+    .lang-switch {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(196, 168, 130, 0.45);
+      border-radius: 999px;
+      padding: 6px 10px;
+      backdrop-filter: blur(4px);
+    }
+    .lang-label {
+      color: rgba(245, 240, 232, 0.9);
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .lang-select {
+      background: transparent;
+      border: 0;
+      color: #fff;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      min-width: 84px;
+    }
+    .lang-select option {
+      color: #111;
+    }
+    @media (max-width: 440px) {
+      .lang-switch {
+        top: 10px;
+        right: 10px;
+        padding: 5px 8px;
+      }
+      .lang-label {
+        display: none;
+      }
+      .lang-select {
+        min-width: 92px;
+        font-size: 0.74rem;
+      }
+    }
+    .age-bar {
+      background: #234223;
+      margin: 0 20px;
+      border-radius: 0 0 14px 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .age-checkbox {
+      width: 22px; height: 22px;
+      border: 2px solid var(--wood);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: 0.2s;
+    }
+    .age-checkbox.checked { background: var(--wood); }
+    .age-checkbox.checked::after { content: "✓"; color: var(--moss); font-weight: 800; font-size: 0.85rem; }
+    .age-text { color: var(--cream); font-size: 0.82rem; line-height: 1.45; }
+    .age-text strong { color: var(--wood); }
+    .age-warning { font-size: 0.72rem; color: var(--coral); text-align: center; padding: 6px 20px 0; display: none; }
+    .age-warning.show { display: block; }
+    .section-label {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted);
+      padding: 0 20px; margin-bottom: 14px;
+    }
+    .drinks-list { padding: 0 14px 44px; display: flex; flex-direction: column; gap: 14px; }
+    .drink-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(43, 74, 43, 0.08);
+      display: flex;
+      align-items: stretch;
+    }
+    .drink-img {
+      width: 110px; flex-shrink: 0; background: #ebe4d8;
+      position: relative; overflow: hidden; min-height: 110px;
+    }
+    .drink-img img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
+    .drink-fallback {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem; z-index: 0; background: linear-gradient(140deg, #e8e0d4, #c4a88222);
+    }
+    .drink-info { padding: 16px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .drink-name { font-family: Fraunces, Georgia, serif; font-size: 1.1rem; color: var(--moss); }
+    .drink-desc { font-size: 0.75rem; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+    .drink-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+    .drink-price { font-size: 1.1rem; font-weight: 600; color: var(--coral); }
+    .drink-price span { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+    .btn-order {
+      background: var(--moss);
+      color: #fff; border: none; padding: 9px 16px; border-radius: 10px;
+      font-family: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer; letter-spacing: 0.02em;
+    }
+    .btn-order:hover { background: var(--coral); }
+    .btn-order.disabled { background: #bbb; cursor: not-allowed; opacity: 0.65; }
+    #screen-checkout { background: #faf7f1; }
+    .checkout-header { background: var(--moss); padding: 44px 20px 26px; color: var(--cream); }
+    .back-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(196, 168, 130, 0.35);
+      color: #fff; padding: 7px 14px; border-radius: 999px; font: inherit; font-size: 0.82rem; cursor: pointer; margin-bottom: 16px;
+    }
+    .checkout-title { font-family: Fraunces, Georgia, serif; font-size: 1.45rem; }
+    .checkout-body { padding: 24px 18px 32px; }
+    .order-summary, .input-group, .payment-methods { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .summary-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ebe4d4; }
+    .summary-total { display: flex; justify-content: space-between; padding-top: 12px; }
+    .total-label { font-family: Fraunces, Georgia, serif; font-size: 1.05rem; }
+    .total-price { font-size: 1.1rem; font-weight: 600; color: var(--moss); }
+    .input-label { display: block; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .name-input, .phone-input {
+      width: 100%; border: 2px solid #e5dccf; border-radius: 10px; padding: 12px 14px;
+      font: inherit; font-size: 1rem; background: #faf6ef; color: var(--dark); outline: none;
+    }
+    .name-input:focus, .phone-input:focus { border-color: var(--moss); }
+    .method-option { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #ebe4d4; cursor: pointer; }
+    .method-option:last-of-type { border-bottom: 0; }
+    .method-radio { width: 20px; height: 20px; border: 2px solid var(--muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .method-option.selected .method-radio { border-color: var(--moss); }
+    .method-option.selected .method-radio::after { content: ""; width: 8px; height: 8px; background: var(--moss); border-radius: 50%; }
+    .method-name { font-weight: 600; font-size: 0.92rem; }
+    .method-sub { font-size: 0.75rem; color: var(--muted); }
+    .mb-row { display: none; }
+    .mb-row.show { display: block; margin-top: 12px; }
+    .btn-pay {
+      width: 100%; background: var(--coral); color: #fff; border: none; padding: 16px; border-radius: 14px; font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-pay:disabled { opacity: 0.55; cursor: not-allowed; }
+    .pay-hint { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 10px; }
+    #screen-waiting {
+      background: linear-gradient(180deg, #1e3a1e, #2b4a2b 35%);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 18px 48px; text-align: center; color: var(--cream);
+    }
+    .waiting-hero-ico { font-size: 3rem; margin-bottom: 6px; }
+    .waiting-name { color: var(--wood); font-family: Fraunces, Georgia, serif; font-size: 1.25rem; }
+    .waiting-title { font-family: Fraunces, Georgia, serif; font-size: 1.55rem; line-height: 1.2; margin: 8px 0; }
+    .waiting-sub { color: rgba(245,240,232,0.65); font-size: 0.88rem; }
+    .mb-bubble {
+      display: none; max-width: 22rem; margin: 20px auto 0; padding: 12px 14px;
+      background: rgba(0,0,0,0.2); border: 1px solid rgba(196,168,130,0.35); border-radius: 12px; font-size: 0.88rem; line-height: 1.4;
+    }
+    .mb-bubble.show { display: block; }
+    .timer-block { margin-top: 20px; }
+    .timer-circle {
+      width: 132px; height: 132px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      margin: 0 auto; position: relative; background: rgba(255,255,255,0.06);
+    }
+    .timer-ring {
+      position: absolute; inset: -3px; border-radius: 50%;
+      border: 3px solid transparent; border-top-color: var(--wood);
+      animation: spin 2s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .timer-number { font-size: 2.1rem; font-weight: 300; color: #fff; }
+    .timer-unit { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+    .ready-pulse { display: none; margin: 20px 0; font-family: Fraunces, Georgia, serif; font-size: 1.5rem; color: #fff1a3; }
+    .ready-pulse.show { display: block; }
+    .status-chips { display: flex; gap: 6px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .chip { padding: 5px 11px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+    .chip-on { background: var(--wood); color: #1a2e1a; }
+    .chip-dim { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); }
+    .meetup-card {
+      width: 100%; max-width: 360px; margin-top: 22px; padding: 20px; border-radius: 18px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(196, 168, 130, 0.25);
+      text-align: left;
+    }
+    .meetup-label { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--wood); margin-bottom: 10px; }
+    .fake-map { height: 120px; border-radius: 12px; background: #142414; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+    .map-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .map-beach { position: absolute; bottom: 0; left: 0; right: 0; height: 32px; background: linear-gradient(to top, rgba(196,168,130,0.35), transparent); }
+    .map-stairs { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: 18px; height: 22px; background: rgba(196, 168, 130, 0.55); border-radius: 3px 3px 0 0; }
+    .map-pin { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); }
+    .map-pin-dot { width: 20px; height: 20px; background: var(--coral); border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    .meetup-name { font-size: 0.95rem; font-weight: 600; color: #fff; margin-top: 12px; }
+    .meetup-desc { font-size: 0.8rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin-top: 4px; }
+    .demo-reset { position: fixed; bottom: 16px; right: 12px; z-index: 20; background: rgba(0,0,0,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 0.72rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div id="screen-menu" class="screen active">
+  <div class="hero">
+    <div class="lang-switch">
+      <span class="lang-label" id="langLabel">Idioma</span>
+      <select class="lang-select" id="languageSelect" onchange="setLanguage(this.value)" aria-label="Language selector">
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+    <div class="logo">Amparo <span>Batidas</span></div>
+    <p class="hook" id="hookText">Então você encontrou! Encomenda na areia, levanta na calçada.</p>
+    <div class="hero-sub" id="heroSubText">Praia · Bar Amparo</div>
+    <div class="hero-tag" id="heroTagText">Entrega no topo da escadaria de madeira</div>
+  </div>
+  <div class="age-bar">
+    <div class="age-checkbox" id="ageCheck" role="checkbox" aria-checked="false" onclick="toggleAge()"></div>
+    <div class="age-text" id="ageText">Confirmo ter <strong>+18</strong> e aceito a entrega de bebidas alcoólicas.</div>
+  </div>
+  <p class="age-warning" id="ageWarning">Confirma a idade para encomendar.</p>
+  <p class="section-label" id="menuLabel">Menu</p>
+  <div class="drinks-list">
+    <div class="drink-card" data-sku="maracuja">
+      <div class="drink-img" style="background: linear-gradient(135deg, #F8E8E8, #C0392B);">
+        <span class="drink-fallback" data-fb aria-hidden="true" style="display:none">🍷</span>
+        <img src="images/maracuja.jpg" alt="Batida de Maracujá" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'; this.previousElementSibling.style.display='flex'" />
+      </div>
+      <div class="drink-info">
+        <div>
+          <div class="drink-name" id="drink1Name">A Espanhola</div>
+          <div class="drink-desc" id="drink1Desc">Vinho tinto, leite condensado e morango congelado batido.</div>
+        </div>
+        <div class="drink-bottom">
+          <div class="drink-price">€8 <span>/ un.</span></div>
+          <button type="button" class="btn-order" id="drink1Btn" onclick="orderDrinkByKey('drink1', 8)">Encomendar</button>
+        </div>
+      </div>
+    </div>
+    <div class="drink-card">
+      <div class="drink-img" style="background: linear-gradient(135deg, #F0FFF0, #A8D5A2);">
+        <span class="drink-fallback" aria-hidden="true" style="display:none">🍋</span>
+        <img src="images/manga.jpg" alt="Batida de Manga" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'; this.previousElementSibling.style.display='flex'" />
+      </div>
+      <div class="drink-info">
+        <div>
+          <div class="drink-name" id="drink2Name">Caipirinha de Vodka</div>
+          <div class="drink-desc" id="drink2Desc">Vodka, limão, açúcar e gelo - clássico com um twist.</div>
+        </div>
+        <div class="drink-bottom">
+          <div class="drink-price">€7 <span>/ un.</span></div>
+          <button type="button" class="btn-order" id="drink2Btn" onclick="orderDrinkByKey('drink2', 7)">Encomendar</button>
+        </div>
+      </div>
+    </div>
+    <div class="drink-card">
+      <div class="drink-img" style="background: linear-gradient(135deg, #FFF8E1, #F0A500);">
+        <span class="drink-fallback" aria-hidden="true" style="display:none">🥃</span>
+        <img src="images/morango.jpg" alt="Batida de Morango" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'; this.previousElementSibling.style.display='flex'" />
+      </div>
+      <div class="drink-info">
+        <div>
+          <div class="drink-name" id="drink3Name">Whisky com Energético</div>
+          <div class="drink-desc" id="drink3Desc">Uísque, energético e gelo de maracujá.</div>
+        </div>
+        <div class="drink-bottom">
+          <div class="drink-price">€10 <span>/ un.</span></div>
+          <button type="button" class="btn-order" id="drink3Btn" onclick="orderDrinkByKey('drink3', 10)">Encomendar</button>
+        </div>
+      </div>
+    </div>
+    <div class="drink-card">
+      <div class="drink-img" style="background: linear-gradient(135deg, #E3F2FD, #64B5F6);">
+        <span class="drink-fallback" aria-hidden="true" style="display:none">🥥</span>
+        <img src="images/coco.jpg" alt="Batida de Coco" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'; this.previousElementSibling.style.display='flex'" />
+      </div>
+      <div class="drink-info">
+        <div>
+          <div class="drink-name" id="drink4Name">Batida de Coco</div>
+          <div class="drink-desc" id="drink4Desc">Leite de coco, cachaça, abacaxi e gengibre.</div>
+        </div>
+        <div class="drink-bottom">
+          <div class="drink-price">€8 <span>/ un.</span></div>
+          <button type="button" class="btn-order" id="drink4Btn" onclick="orderDrinkByKey('drink4', 8)">Encomendar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-checkout" class="screen">
+  <div class="checkout-header">
+    <button type="button" class="back-btn" id="backBtnText" onclick="goTo('menu')">← Voltar</button>
+    <div class="checkout-title" id="checkoutTitleText">O teu pedido</div>
+  </div>
+  <div class="checkout-body">
+    <div class="order-summary">
+      <div class="summary-label" id="summaryLabelText">Resumo</div>
+      <div class="summary-row">
+        <span id="checkout-drink-name">—</span>
+        <span id="checkout-drink-price" style="color:var(--coral); font-weight:600">—</span>
+      </div>
+      <div class="summary-row" id="summaryNoteText" style="border:0; color:var(--muted); font-size:0.8rem">Copo reutilizável, embalagem incluída.</div>
+      <div class="summary-total">
+        <span class="total-label" id="totalLabelText">Total</span>
+        <span class="total-price" id="checkout-total">—</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label" id="nameLabelText" for="customerName">Nome para o levantamento</label>
+      <input class="name-input" id="customerName" name="name" type="text" inputmode="text" autocomplete="name" placeholder="Ex: Joana" />
+    </div>
+    <div class="payment-methods" id="paybox">
+      <div class="summary-label" id="paymentLabelText">Pagamento</div>
+      <div class="method-option selected" data-pay="card" onclick="selectMethod(this)">
+        <div class="method-radio" aria-hidden="true"></div>
+        <div>
+          <div class="method-name" id="cardNameText">Cartão (Stripe)</div>
+          <div class="method-sub" id="cardSubText">Visa, Mastercard, Apple / Google Pay</div>
+        </div>
+      </div>
+      <div class="method-option" data-pay="mb" onclick="selectMethod(this)">
+        <div class="method-radio" aria-hidden="true"></div>
+        <div>
+          <div class="method-name" id="mbNameText">MB Way (Easypay)</div>
+          <div class="method-sub" id="mbSubText">Confirma no telemóvel</div>
+        </div>
+      </div>
+    </div>
+    <div class="input-group mb-row" id="mbPhoneRow" aria-hidden="true">
+      <label class="input-label" id="mbPhoneLabelText" for="mbPhone">Telemóvel (MB Way)</label>
+      <input class="phone-input" id="mbPhone" name="mbPhone" type="tel" inputmode="numeric" placeholder="9xx xxx xxx" />
+    </div>
+    <button class="btn-pay" id="btnPay" type="button" onclick="pay()">Pagar e continuar</button>
+    <p class="pay-hint" id="apiHint">Em produção na Vercel, o pagamento liga às APIs em /api. Localmente, usa <code>vercel dev</code> (ou o deploy) para testar tudo a sério.</p>
+  </div>
+</div>
+
+<div id="screen-waiting" class="screen">
+  <div class="waiting-hero-ico" aria-hidden="true">🍹</div>
+  <div class="waiting-name" id="waiting-customer">—</div>
+  <div class="waiting-title" id="waiting-headline">A tua batida vem a caminho</div>
+  <div class="waiting-sub" id="waiting-line2">Acompanha o estado e vem buscar na calçada</div>
+  <div class="mb-bubble" id="mbBubble">Abre o app MB Way e confirma o pedido. Já vamos a seguir a tua encomenda…</div>
+  <div class="ready-pulse" id="readyMessage"></div>
+  <div class="timer-block" id="timerBlock">
+    <div class="timer-circle">
+      <div class="timer-ring"></div>
+      <div class="timer-number" id="timer-display">8</div>
+      <div class="timer-unit" id="timer-unit">min</div>
+    </div>
+  </div>
+  <div class="status-chips" id="chips">
+    <div class="chip chip-on" id="chip1">Pago</div>
+    <div class="chip chip-dim" id="chip2">A preparar</div>
+    <div class="chip chip-dim" id="chip3">Levantamento</div>
+  </div>
+  <div class="meetup-card">
+    <div class="meetup-label" id="meetupLabelText">Ponto de encontro</div>
+    <div class="fake-map" aria-hidden="true">
+      <div class="map-grid"></div>
+      <div class="map-beach"></div>
+      <div class="map-stairs"></div>
+      <div class="map-pin"><div class="map-pin-dot"></div></div>
+    </div>
+    <div class="meetup-name" id="meetupNameText">Escadaria da praia (madeira) → topo, à esquerda</div>
+    <div class="meetup-desc" id="meetupDescText">Procura a banca com o logo <span style="color:var(--wood)">Amparo</span> — aí entregamos a batida, bem fresca.</div>
+  </div>
+  <button type="button" class="demo-reset" id="newOrderBtnText" onclick="resetAll()">Novo pedido</button>
+</div>
+
+<script>
+  let ageConfirmed = false;
+  let selectedDrink = '';
+  let selectedDrinkKey = '';
+  let selectedPrice = 0;
+  let lang = localStorage.getItem('lang') || 'pt';
+  let currentOrder = null; // { id, client_token, nome, first }
+  let timerInterval = null;
+  let orderPoll = null;
+  let easypayT = null;
+  const qs = (s) => document.querySelector(s);
+  const first = (n) => (n || 'batota').split(/\s+/)[0].replace(/[^a-záéíóúãõâêôçA-ZÁÉÍÓÚÃÕÂÊÔÇ-]/g, '');
+  const I18N = {
+    pt: {
+      languageLabel: 'Idioma',
+      hook: 'Então você encontrou! Encomenda na areia, levanta na calçada.',
+      heroSub: 'Praia · Bar Amparo',
+      heroTag: 'Entrega no topo da escadaria de madeira',
+      ageText: 'Confirmo ter <strong>+18</strong> e aceito a entrega de bebidas alcoólicas.',
+      ageWarning: 'Confirma a idade para encomendar.',
+      menu: 'Menu',
+      orderBtn: 'Encomendar',
+      drink1Name: 'A Espanhola',
+      drink1Desc: 'Vinho tinto, leite condensado e morango congelado batido.',
+      drink2Name: 'Caipirinha de Vodka',
+      drink2Desc: 'Vodka, limão, açúcar e gelo - clássico com um twist.',
+      drink3Name: 'Whisky com Energético',
+      drink3Desc: 'Uísque, energético e gelo de maracujá.',
+      drink4Name: 'Batida de Coco',
+      drink4Desc: 'Leite de coco, cachaça, abacaxi e gengibre.',
+      backBtn: '← Voltar',
+      checkoutTitle: 'O teu pedido',
+      summary: 'Resumo',
+      summaryNote: 'Copo reutilizável, embalagem incluída.',
+      total: 'Total',
+      nameLabel: 'Nome para o levantamento',
+      namePlaceholder: 'Ex: Joana',
+      payment: 'Pagamento',
+      cardName: 'Cartão (Stripe)',
+      cardSub: 'Visa, Mastercard, Apple / Google Pay',
+      mbName: 'MB Way (Easypay)',
+      mbSub: 'Confirma no telemóvel',
+      mbPhoneLabel: 'Telemóvel (MB Way)',
+      mbPhonePlaceholder: '9xx xxx xxx',
+      payBtn: 'Pagar e continuar',
+      apiHint: 'Em produção na Vercel, o pagamento liga às APIs em /api. Localmente, usa <code>vercel dev</code> (ou o deploy) para testar tudo a sério.',
+      waitingHeadline: 'A tua batida vem a caminho',
+      waitingLine2: 'Acompanha o estado e vem buscar na calçada',
+      mbBubble: 'Abre o app MB Way e confirma o pedido. Já vamos a seguir a tua encomenda…',
+      chip1: 'Pago',
+      chip2: 'A preparar',
+      chip3: 'Levantamento',
+      meetupLabel: 'Ponto de encontro',
+      meetupName: 'Escadaria da praia (madeira) → topo, à esquerda',
+      meetupDesc: 'Procura a banca com o logo <span style="color:var(--wood)">Amparo</span> — aí entregamos a batida, bem fresca.',
+      newOrderBtn: 'Novo pedido',
+      alertStripeOpen: 'Não deu para abrir o Stripe. Verifica as variáveis e se estás a usar Vercel / vercel dev.',
+      alertUnexpected: 'Resposta inesperada do servidor',
+      alertNoApi: 'Sem API local (faz deploy ou `vercel dev` na pasta do projecto) ou rede offline. Detalhe: ',
+      alertEasypay: 'Easypay',
+      alertEasypayFail: 'Falha Easypay. ',
+      waitingMbTitle: 'A confirmar o MB Way…',
+      waitingMbSub: 'Avisa se não receberes a notificação e tenta de novo no checkout.',
+      waitingPreparingTitle: 'A tua batida está a ser preparada',
+      waitingPreparingSub: 'O staff já viu o pedido. Demora o tempo que tiver a demorar, sabes como é, né?',
+      waitingReadyTitle: 'Já está pronta',
+      waitingReadySub: 'No patamar, ao pé da banca do Amparo.',
+      waitingReadyMsgA: 'Vem buscar, ',
+      waitingReadyMsgB: '! 🍹',
+      waitingReadyFallback: 'Vem buscar! 🍹',
+      greetReady: 'Aí vem! ',
+      greetPending: 'Bora, ',
+      paymentCancel: 'O pagamento foi cancelado. Queres tentar de novo?'
+    },
+    en: {
+      languageLabel: 'Language',
+      hook: 'There you found us! Order on the sand, pick up at the top.',
+      heroSub: 'Beach · Bar Amparo',
+      heroTag: 'Pickup at the top of the wooden stairs',
+      ageText: 'I confirm I am <strong>18+</strong> and accept alcohol delivery.',
+      ageWarning: 'Confirm your age to place an order.',
+      menu: 'Menu',
+      orderBtn: 'Order',
+      drink1Name: 'A Espanhola',
+      drink1Desc: 'Red wine, condensed milk and blended frozen strawberry.',
+      drink2Name: 'Vodka Caipirinha',
+      drink2Desc: 'Vodka, lime, sugar and ice - a classic with a twist.',
+      drink3Name: 'Whisky with Energy Drink',
+      drink3Desc: 'Whisky, energy drink and passion-fruit ice.',
+      drink4Name: 'Coconut Batida',
+      drink4Desc: 'Coconut milk, cachaça, pineapple and ginger.',
+      backBtn: '← Back',
+      checkoutTitle: 'Your order',
+      summary: 'Summary',
+      summaryNote: 'Reusable cup and packaging included.',
+      total: 'Total',
+      nameLabel: 'Pickup name',
+      namePlaceholder: 'e.g. Joana',
+      payment: 'Payment',
+      cardName: 'Card (Stripe)',
+      cardSub: 'Visa, Mastercard, Apple / Google Pay',
+      mbName: 'MB Way (Easypay)',
+      mbSub: 'Confirm on your phone',
+      mbPhoneLabel: 'Phone number (MB Way)',
+      mbPhonePlaceholder: '9xx xxx xxx',
+      payBtn: 'Pay and continue',
+      apiHint: 'In production on Vercel, payment calls /api routes. Locally, use <code>vercel dev</code> (or deploy) to fully test payments.',
+      waitingHeadline: 'Your drink is on the way',
+      waitingLine2: 'Track the status and pick up at the top path',
+      mbBubble: 'Open the MB Way app and confirm your payment. We will track your order right away…',
+      chip1: 'Paid',
+      chip2: 'Preparing',
+      chip3: 'Pickup',
+      meetupLabel: 'Meeting point',
+      meetupName: 'Beach wooden stairs → top, left side',
+      meetupDesc: 'Look for the stand with the <span style="color:var(--wood)">Amparo</span> logo — we hand your drink there, fresh and cold.',
+      newOrderBtn: 'New order',
+      alertStripeOpen: 'Could not open Stripe. Check variables and ensure you are using Vercel / vercel dev.',
+      alertUnexpected: 'Unexpected server response',
+      alertNoApi: 'No local API available (deploy or run `vercel dev` in project folder) or network offline. Details: ',
+      alertEasypay: 'Easypay',
+      alertEasypayFail: 'Easypay failed. ',
+      waitingMbTitle: 'Confirming MB Way…',
+      waitingMbSub: 'If you do not receive the notification, return to checkout and try again.',
+      waitingPreparingTitle: 'Your drink is being prepared',
+      waitingPreparingSub: 'The staff has your order. It will take the time it needs.',
+      waitingReadyTitle: 'Your order is ready',
+      waitingReadySub: 'At the landing, near the Amparo stand.',
+      waitingReadyMsgA: 'Come pick up, ',
+      waitingReadyMsgB: '! 🍹',
+      waitingReadyFallback: 'Come pick up! 🍹',
+      greetReady: 'Here it comes! ',
+      greetPending: 'Let’s go, ',
+      paymentCancel: 'Payment was canceled. Want to try again?'
+    },
+    fr: {
+      languageLabel: 'Langue',
+      hook: 'Vous nous avez trouvés ! Commandez sur le sable, récupérez en haut.',
+      heroSub: 'Plage · Bar Amparo',
+      heroTag: 'Retrait en haut de l’escalier en bois',
+      ageText: 'Je confirme avoir <strong>18 ans ou plus</strong> et accepter la livraison d’alcool.',
+      ageWarning: 'Confirmez votre âge pour commander.',
+      menu: 'Menu',
+      orderBtn: 'Commander',
+      drink1Name: 'A Espanhola',
+      drink1Desc: 'Vin rouge, lait concentré et fraise surgelée mixée.',
+      drink2Name: 'Caipirinha à la Vodka',
+      drink2Desc: 'Vodka, citron vert, sucre et glace - un classique revisité.',
+      drink3Name: 'Whisky et Énergisant',
+      drink3Desc: 'Whisky, boisson énergisante et glace au fruit de la passion.',
+      drink4Name: 'Batida de Coco',
+      drink4Desc: 'Lait de coco, cachaça, ananas et gingembre.',
+      backBtn: '← Retour',
+      checkoutTitle: 'Votre commande',
+      summary: 'Résumé',
+      summaryNote: 'Gobelet réutilisable et emballage inclus.',
+      total: 'Total',
+      nameLabel: 'Nom pour le retrait',
+      namePlaceholder: 'Ex: Joana',
+      payment: 'Paiement',
+      cardName: 'Carte (Stripe)',
+      cardSub: 'Visa, Mastercard, Apple / Google Pay',
+      mbName: 'MB Way (Easypay)',
+      mbSub: 'Confirmez sur votre téléphone',
+      mbPhoneLabel: 'Téléphone (MB Way)',
+      mbPhonePlaceholder: '9xx xxx xxx',
+      payBtn: 'Payer et continuer',
+      apiHint: 'En production sur Vercel, le paiement utilise les routes /api. En local, utilisez <code>vercel dev</code> (ou déployez) pour tout tester.',
+      waitingHeadline: 'Votre boisson arrive',
+      waitingLine2: 'Suivez le statut et récupérez-la en haut',
+      mbBubble: 'Ouvrez l’app MB Way et confirmez le paiement. Nous suivons votre commande immédiatement…',
+      chip1: 'Payé',
+      chip2: 'Préparation',
+      chip3: 'Retrait',
+      meetupLabel: 'Point de rencontre',
+      meetupName: 'Escalier de plage (bois) → en haut, à gauche',
+      meetupDesc: 'Cherchez le stand avec le logo <span style="color:var(--wood)">Amparo</span> — nous y remettons votre boisson bien fraîche.',
+      newOrderBtn: 'Nouvelle commande',
+      alertStripeOpen: 'Impossible d’ouvrir Stripe. Vérifiez les variables et utilisez Vercel / vercel dev.',
+      alertUnexpected: 'Réponse serveur inattendue',
+      alertNoApi: 'API locale indisponible (déployez ou lancez `vercel dev` dans le projet) ou réseau hors ligne. Détail: ',
+      alertEasypay: 'Easypay',
+      alertEasypayFail: 'Échec Easypay. ',
+      waitingMbTitle: 'Confirmation MB Way…',
+      waitingMbSub: 'Si vous ne recevez pas la notification, revenez au checkout et réessayez.',
+      waitingPreparingTitle: 'Votre boisson est en préparation',
+      waitingPreparingSub: 'L’équipe a bien reçu la commande. Cela prendra le temps nécessaire.',
+      waitingReadyTitle: 'C’est prêt',
+      waitingReadySub: 'Sur le palier, près du stand Amparo.',
+      waitingReadyMsgA: 'Venez récupérer, ',
+      waitingReadyMsgB: ' ! 🍹',
+      waitingReadyFallback: 'Venez récupérer ! 🍹',
+      greetReady: 'Ça arrive ! ',
+      greetPending: 'Allez, ',
+      paymentCancel: 'Le paiement a été annulé. Voulez-vous réessayer ?'
+    }
+  };
+  const tr = (k) => (I18N[lang] && I18N[lang][k]) || I18N.pt[k] || k;
+
+  function applyLanguage() {
+    document.documentElement.lang = lang;
+    const pick = document.getElementById('languageSelect');
+    if (pick) pick.value = lang;
+    const set = (id, key) => { const el = document.getElementById(id); if (el) el.textContent = tr(key); };
+    const setHtml = (id, key) => { const el = document.getElementById(id); if (el) el.innerHTML = tr(key); };
+    set('langLabel', 'languageLabel');
+    set('hookText', 'hook');
+    set('heroSubText', 'heroSub');
+    set('heroTagText', 'heroTag');
+    setHtml('ageText', 'ageText');
+    set('ageWarning', 'ageWarning');
+    set('menuLabel', 'menu');
+    set('drink1Name', 'drink1Name');
+    set('drink1Desc', 'drink1Desc');
+    set('drink2Name', 'drink2Name');
+    set('drink2Desc', 'drink2Desc');
+    set('drink3Name', 'drink3Name');
+    set('drink3Desc', 'drink3Desc');
+    set('drink4Name', 'drink4Name');
+    set('drink4Desc', 'drink4Desc');
+    set('drink1Btn', 'orderBtn');
+    set('drink2Btn', 'orderBtn');
+    set('drink3Btn', 'orderBtn');
+    set('drink4Btn', 'orderBtn');
+    set('backBtnText', 'backBtn');
+    set('checkoutTitleText', 'checkoutTitle');
+    set('summaryLabelText', 'summary');
+    set('summaryNoteText', 'summaryNote');
+    set('totalLabelText', 'total');
+    set('nameLabelText', 'nameLabel');
+    set('paymentLabelText', 'payment');
+    set('cardNameText', 'cardName');
+    set('cardSubText', 'cardSub');
+    set('mbNameText', 'mbName');
+    set('mbSubText', 'mbSub');
+    set('mbPhoneLabelText', 'mbPhoneLabel');
+    set('btnPay', 'payBtn');
+    setHtml('apiHint', 'apiHint');
+    set('chip1', 'chip1');
+    set('chip2', 'chip2');
+    set('chip3', 'chip3');
+    set('meetupLabelText', 'meetupLabel');
+    set('meetupNameText', 'meetupName');
+    setHtml('meetupDescText', 'meetupDesc');
+    set('newOrderBtnText', 'newOrderBtn');
+    const n = document.getElementById('customerName');
+    if (n) n.placeholder = tr('namePlaceholder');
+    const mb = document.getElementById('mbPhone');
+    if (mb) mb.placeholder = tr('mbPhonePlaceholder');
+    if (!currentOrder) {
+      set('waiting-headline', 'waitingHeadline');
+      set('waiting-line2', 'waitingLine2');
+      set('mbBubble', 'mbBubble');
+    }
+    if (selectedDrinkKey) {
+      selectedDrink = tr(selectedDrinkKey + 'Name');
+      document.getElementById('checkout-drink-name').textContent = selectedDrink;
+    }
+  }
+
+  function setLanguage(next) {
+    if (!I18N[next]) return;
+    lang = next;
+    localStorage.setItem('lang', lang);
+    applyLanguage();
+  }
+
+  function clearTimers() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if (orderPoll) { clearInterval(orderPoll); orderPoll = null; }
+    if (easypayT) { clearTimeout(easypayT); easypayT = null; }
+  }
+
+  function paymentIsCard() {
+    return qs('.method-option.selected') && qs('.method-option.selected').getAttribute('data-pay') === 'card';
+  }
+
+  function toggleAge() {
+    ageConfirmed = !ageConfirmed;
+    const box = document.getElementById('ageCheck');
+    box.classList.toggle('checked', ageConfirmed);
+    box.setAttribute('aria-checked', String(ageConfirmed));
+    document.getElementById('ageWarning').classList.remove('show');
+  }
+
+  function orderDrinkByKey(drinkKey, price) {
+    if (!ageConfirmed) {
+      document.getElementById('ageWarning').classList.add('show');
+      return;
+    }
+    selectedDrinkKey = drinkKey;
+    selectedDrink = tr(drinkKey + 'Name');
+    selectedPrice = price;
+    document.getElementById('checkout-drink-name').textContent = selectedDrink;
+    document.getElementById('checkout-drink-price').textContent = '€' + price;
+    document.getElementById('checkout-total').textContent = '€' + price;
+    goTo('checkout');
+  }
+
+  function selectMethod(el) {
+    document.querySelectorAll('.method-option').forEach((m) => m.classList.remove('selected'));
+    el.classList.add('selected');
+    const mb = el.getAttribute('data-pay') === 'mb';
+    const row = document.getElementById('mbPhoneRow');
+    row.classList.toggle('show', mb);
+    row.setAttribute('aria-hidden', String(!mb));
+  }
+
+  async function pay() {
+    const name = document.getElementById('customerName').value.trim();
+    if (!name) {
+      document.getElementById('customerName').focus();
+      return;
+    }
+    if (!selectedDrink) return;
+    const isCard = paymentIsCard();
+    if (isCard) {
+      document.getElementById('btnPay').disabled = true;
+      try {
+        const r = await fetch('/api/stripe-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome_cliente: name, bebida: selectedDrink, preco: selectedPrice })
+        });
+        const j = await r.json();
+        if (!r.ok) { alert(j.error || tr('alertStripeOpen')); return; }
+        if (j.url) { window.location.href = j.url; return; }
+        alert(tr('alertUnexpected'));
+      } catch (e) {
+        alert(tr('alertNoApi') + (e && e.message));
+      } finally {
+        document.getElementById('btnPay').disabled = false;
+      }
+      return;
+    }
+    const ph = (document.getElementById('mbPhone').value || '').replace(/\s/g, '');
+    if (ph.length < 9) {
+      document.getElementById('mbPhone').focus();
+      return;
+    }
+    document.getElementById('btnPay').disabled = true;
+    try {
+      const r = await fetch('/api/easypay-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome_cliente: name, bebida: selectedDrink, preco: selectedPrice, phone: ph })
+      });
+      const j = await r.json();
+      if (!r.ok) { alert(j.error || tr('alertEasypay')); return; }
+      sessionStorage.setItem('ep', JSON.stringify({ id: j.paymentId, name, bebida: selectedDrink, preco: selectedPrice }));
+      prepWaitingFromMb(name);
+    } catch (e) {
+      alert(tr('alertEasypayFail') + (e && e.message));
+    } finally {
+      document.getElementById('btnPay').disabled = false;
+    }
+  }
+
+  function prepWaitingFromMb(nome) {
+    clearTimers();
+    document.getElementById('readyMessage').classList.remove('show');
+    document.getElementById('timerBlock').style.display = 'block';
+    document.getElementById('mbBubble').classList.add('show');
+    document.getElementById('mbBubble').textContent = tr('mbBubble');
+    document.getElementById('waiting-headline').textContent = tr('waitingMbTitle');
+    document.getElementById('waiting-line2').textContent = tr('waitingMbSub');
+    setWaitingGreeting(nome, false);
+    goTo('waiting');
+    const tick = () => { syncEasypay().catch(() => {}); };
+    tick();
+    easypayT = setTimeout(function loop() {
+      syncEasypay()
+        .then((ok) => { if (!ok) easypayT = setTimeout(loop, 4000); })
+        .catch(() => { easypayT = setTimeout(loop, 4000); });
+    }, 4000);
+  }
+
+  async function syncEasypay() {
+    const raw = sessionStorage.getItem('ep');
+    if (!raw) return false;
+    const ep = JSON.parse(raw);
+    const r = await fetch('/api/easypay-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        payment_id: ep.id,
+        nome_cliente: ep.name,
+        bebida: ep.bebida,
+        preco: ep.preco
+      })
+    });
+    const j = await r.json();
+    if (j.paid) {
+      sessionStorage.removeItem('ep');
+      clearTimers();
+      if (easypayT) { clearTimeout(easypayT); easypayT = null; }
+      startActiveOrder({ id: j.id, client_token: j.client_token, nome_cliente: j.nome_cliente });
+      return true;
+    }
+    return false;
+  }
+
+  function setWaitingGreeting(full, ready) {
+    const fn = first(full);
+    document.getElementById('waiting-customer').textContent = (ready ? tr('greetReady') : tr('greetPending')) + fn + '!';
+  }
+
+  function startActiveOrder(j) {
+    const full = j.nome_cliente || j.nome || 'Cliente';
+    currentOrder = { id: j.id, token: j.client_token, nome: full, first: first(full) };
+    sessionStorage.setItem('o', JSON.stringify({ id: j.id, t: j.client_token, n: full }));
+    document.getElementById('mbBubble').classList.remove('show');
+    document.getElementById('readyMessage').classList.remove('show');
+    document.getElementById('waiting-headline').textContent = tr('waitingPreparingTitle');
+    document.getElementById('waiting-line2').textContent = tr('waitingPreparingSub');
+    setWaitingGreeting(full, false);
+    goTo('waiting');
+    const minutes = 8;
+    const display = document.getElementById('timer-display');
+    const unit = document.getElementById('timer-unit');
+    document.getElementById('timerBlock').style.display = 'block';
+    let secs = minutes * 60;
+    if (timerInterval) clearInterval(timerInterval);
+    display.textContent = String(minutes);
+    unit.textContent = 'min';
+    timerInterval = setInterval(() => {
+      secs -= 1;
+      if (secs < 0) { clearInterval(timerInterval); return; }
+      if (secs < 60) { display.textContent = String(secs); unit.textContent = 'seg'; }
+      else { display.textContent = String(Math.ceil(secs / 60)); unit.textContent = 'min'; }
+    }, 1000);
+    if (orderPoll) clearInterval(orderPoll);
+    const one = () => { pollOrder().catch(() => {}); };
+    one();
+    orderPoll = setInterval(one, 10000);
+    applyChips('pendente');
+  }
+
+  async function pollOrder() {
+    if (!currentOrder) return;
+    const r = await fetch('/api/order-status?id=' + encodeURIComponent(currentOrder.id) + '&token=' + encodeURIComponent(currentOrder.token));
+    if (!r.ok) return;
+    const j = await r.json();
+    if (!j.order) return;
+    const st = j.order.estado;
+    if (st === 'pendente' || st === 'preparando' || st === 'pronto') { applyChips(st); }
+    if (st === 'pronto') showReady();
+  }
+
+  function applyChips(st) {
+    const c1 = document.getElementById('chip1');
+    const c2 = document.getElementById('chip2');
+    const c3 = document.getElementById('chip3');
+    c1.className = 'chip chip-on';
+    if (st === 'pendente') { c2.className = 'chip chip-dim'; c3.className = 'chip chip-dim'; }
+    else if (st === 'preparando') { c2.className = 'chip chip-on'; c3.className = 'chip chip-dim'; }
+    else { c2.className = 'chip chip-on'; c3.className = 'chip chip-on'; }
+  }
+
+  function showReady() {
+    clearTimers();
+    document.getElementById('timerBlock').style.display = 'none';
+    const f = currentOrder && currentOrder.first;
+    const msg = document.getElementById('readyMessage');
+    msg.classList.add('show');
+    msg.textContent = f ? tr('waitingReadyMsgA') + f + tr('waitingReadyMsgB') : tr('waitingReadyFallback');
+    document.getElementById('waiting-headline').textContent = tr('waitingReadyTitle');
+    document.getElementById('waiting-line2').textContent = tr('waitingReadySub');
+    setWaitingGreeting((currentOrder && currentOrder.nome) || 'Cliente', true);
+  }
+
+  function goTo(screen) {
+    document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+    const el = document.getElementById('screen-' + screen);
+    if (el) el.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function resetAll() {
+    clearTimers();
+    currentOrder = null;
+    sessionStorage.removeItem('o');
+    sessionStorage.removeItem('ep');
+    document.getElementById('readyMessage').classList.remove('show');
+    document.getElementById('mbBubble').classList.remove('show');
+    goTo('menu');
+  }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    applyLanguage();
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('payment') === 'cancel') {
+      alert(tr('paymentCancel'));
+    }
+    if (p.get('payment') === 'stripe' && p.get('session_id')) {
+      const r = await fetch('/api/complete-order?session_id=' + encodeURIComponent(p.get('session_id')));
+      const j = await r.json();
+      if (r.ok && j.id) {
+        history.replaceState({}, '', (window.location.pathname || '/') + window.location.hash);
+        startActiveOrder({ id: j.id, client_token: j.client_token, nome_cliente: j.nome_cliente });
+        return;
+      }
+    }
+    const s = sessionStorage.getItem('o');
+    if (s) {
+      const o = JSON.parse(s);
+      if (o && o.id && o.t) {
+        startActiveOrder({ id: o.id, client_token: o.t, nome_cliente: o.n });
+        return;
+      }
+    }
+  });
+</script>
+</body>
+</html>

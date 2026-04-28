@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amparo — Receção</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400&family=Syne:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #2b4a2b;
+      --coral: #e8603c;
+      --wood: #c4a882;
+      --cream: #f5f0e8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Syne, system-ui, sans-serif;
+      background: var(--cream);
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 20px 16px 40px;
+    }
+    h1 {
+      font-family: Fraunces, Georgia, serif;
+      color: var(--moss);
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+    .sub { color: #5c5c5c; font-size: 0.88rem; margin-bottom: 20px; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .toolbar input {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 2px solid #ddd;
+      min-width: 200px;
+      font: inherit;
+    }
+    .toolbar button {
+      background: var(--moss);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .toolbar button.secondary { background: var(--wood); color: #1a1a1a; }
+    .err {
+      background: #ffe4dc;
+      color: #8b2c0a;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .err.show { display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      font-size: 0.86rem;
+    }
+    th {
+      background: var(--moss);
+      color: #f5f0e8;
+      font-weight: 500;
+    }
+    tr:nth-child(even) { background: #faf8f4; }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .tag.pendente { background: #fff3d6; color: #7a5a00; }
+    .tag.preparando { background: #d7e8ff; color: #0b3d6b; }
+    .tag.pronto { background: #d4f4dd; color: #145a24; }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .actions button {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: var(--coral);
+      color: #fff;
+    }
+    .actions button.ghost { background: #e8e0d4; color: #333; }
+    @media (max-width: 720px) {
+      th:nth-child(4), td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Amparo Batidas</h1>
+  <p class="sub">Pedidos em tempo quase real (atualiza a lista a cada 2s). Autentica com o token de admin (mesmo valor que ADMIN_TOKEN na Vercel).</p>
+  <div class="err" id="err"></div>
+  <div class="toolbar" id="loginBar">
+    <input type="password" id="token" placeholder="Token de admin" autocomplete="off" />
+    <button type="button" id="save">Guardar e carregar</button>
+  </div>
+  <div class="toolbar" id="bar" style="display:none">
+    <button type="button" class="secondary" id="clear">Sair / limpar token</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Quando</th>
+        <th>Nome</th>
+        <th>Bebida</th>
+        <th>Pag.</th>
+        <th>€</th>
+        <th>Estado</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="7">Ainda sem dados — cola o token e carrega.</td></tr>
+    </tbody>
+  </table>
+  <script>
+    const LS = 'amparo_admin_token';
+    const err = document.getElementById('err');
+    const rows = document.getElementById('rows');
+    const loginBar = document.getElementById('loginBar');
+    const bar = document.getElementById('bar');
+
+    function showErr(t) {
+      err.textContent = t;
+      err.classList.toggle('show', !!t);
+    }
+
+    function getToken() {
+      return sessionStorage.getItem(LS) || localStorage.getItem(LS) || document.getElementById('token').value.trim();
+    }
+
+    function setToken(t) {
+      if (t) sessionStorage.setItem(LS, t);
+    }
+
+    document.getElementById('save').onclick = () => {
+      const t = document.getElementById('token').value.trim();
+      if (!t) { showErr('Indica o token.'); return; }
+      setToken(t);
+      bar.style.display = 'flex';
+      showErr('');
+      load();
+    };
+    document.getElementById('clear').onclick = () => {
+      sessionStorage.removeItem(LS);
+      localStorage.removeItem(LS);
+      document.getElementById('token').value = '';
+      bar.style.display = 'none';
+      rows.innerHTML = '<tr><td colspan="7">Token removido.</td></tr>';
+    };
+
+    async function load() {
+      const t = getToken();
+      if (!t) { showErr('Falta token de admin.'); return; }
+      const r = await fetch('/api/admin-orders', { headers: { Authorization: 'Bearer ' + t } });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        showErr(j.error || 'Erro ' + r.status);
+        rows.innerHTML = '<tr><td colspan="7">—</td></tr>';
+        return;
+      }
+      showErr('');
+      const list = j.orders || [];
+      if (!list.length) {
+        rows.innerHTML = '<tr><td colspan="7">Sem pedidos ainda.</td></tr>';
+        return;
+      }
+      rows.innerHTML = list.map((o) => {
+        const d = new Date(o.criado_em);
+        const h = d.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        return `<tr>
+          <td>${h}</td>
+          <td>${escapeHtml(o.nome_cliente)}</td>
+          <td>${escapeHtml(o.bebida)}</td>
+          <td>${escapeHtml((o.metodo_pagamento || '—').slice(0, 18))}</td>
+          <td>${Number(o.preco).toFixed(2)}</td>
+          <td><span class="tag ${o.estado}">${o.estado}</span></td>
+          <td class="actions">
+            <button type="button" class="ghost" data-id="${o.id}" data-next="preparando" ${o.estado !== 'pendente' ? 'disabled' : ''}>A preparar</button>
+            <button type="button" data-id="${o.id}" data-next="pronto" ${o.estado === 'pronto' ? 'disabled' : ''}>Pronto</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      rows.querySelectorAll('button[data-id]').forEach((btn) => {
+        btn.onclick = () => patch(btn.getAttribute('data-id'), btn.getAttribute('data-next'));
+      });
+    }
+
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    async function patch(id, estado) {
+      const t = getToken();
+      if (!t) return;
+      const r = await fetch('/api/admin-orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t },
+        body: JSON.stringify({ id, estado }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { showErr(j.error || 'Falha ao actualizar'); return; }
+      load();
+    }
+
+    if (getToken() && getToken() !== document.getElementById('token').value) {
+      document.getElementById('token').value = '••••';
+      bar.style.display = 'flex';
+    }
+    if (getToken()) {
+      bar.style.display = 'flex';
+      load();
+    }
+
+    setInterval(() => { if (getToken()) load(); }, 2000);
+  </script>
+</body>
+</html>

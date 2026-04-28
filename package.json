@@ -1,0 +1,19 @@
+{
+  "name": "amparo-batidas",
+  "version": "1.0.0",
+  "description": "App de encomendas - Amparo Batidas",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve public -p 3000",
+    "dev:vercel": "vercel dev",
+    "start": "npx serve public -p 3000"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "serve": "^14.2.1",
+    "stripe": "^17.6.0"
+  },
+  "devDependencies": {
+    "vercel": "^39.0.0"
+  }
+}
