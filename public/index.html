@@ -185,6 +185,33 @@
     .drink-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
     .drink-price { font-size: 1.1rem; font-weight: 600; color: var(--coral); }
     .drink-price span { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+    .menu-actions { display: flex; align-items: center; gap: 8px; }
+    .menu-qty {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f6efe3;
+      border: 1px solid #e4dac9;
+      border-radius: 10px;
+      padding: 4px 6px;
+    }
+    .menu-qty-num { min-width: 14px; text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--moss); }
+    .menu-qty-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 1px solid #d3c7b5;
+      background: #fff;
+      color: var(--moss);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
     .btn-order {
       background: var(--moss);
       color: #fff; border: none; padding: 9px 16px; border-radius: 10px;
@@ -204,6 +231,31 @@
     .order-summary, .input-group, .payment-methods { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
     .summary-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ebe4d4; }
+    .cart-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #ebe4d4;
+    }
+    .cart-item-name { font-size: 0.9rem; font-weight: 600; color: var(--dark); }
+    .cart-item-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .qty-box { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid #d9cfbf;
+      background: #fff;
+      color: var(--moss);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .qty-num { min-width: 18px; text-align: center; font-size: 0.86rem; font-weight: 600; }
+    .cart-empty { font-size: 0.82rem; color: var(--muted); padding: 6px 0 2px; }
     .summary-total { display: flex; justify-content: space-between; padding-top: 12px; }
     .total-label { font-family: Fraunces, Georgia, serif; font-size: 1.05rem; }
     .total-price { font-size: 1.1rem; font-weight: 600; color: var(--moss); }
@@ -320,7 +372,14 @@
         </div>
         <div class="drink-bottom">
           <div class="drink-price">€8 <span>/ un.</span></div>
-          <button type="button" class="btn-order" id="drink1Btn" onclick="orderDrinkByKey('drink1', 8)">Encomendar</button>
+          <div class="menu-actions">
+            <div class="menu-qty">
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink1', -1)">−</button>
+              <span class="menu-qty-num" id="drink1Qty">0</span>
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink1', 1)">+</button>
+            </div>
+            <button type="button" class="btn-order" id="drink1Btn" onclick="orderDrinkByKey('drink1', 8)">Encomendar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -336,7 +395,14 @@
         </div>
         <div class="drink-bottom">
           <div class="drink-price">€7 <span>/ un.</span></div>
-          <button type="button" class="btn-order" id="drink2Btn" onclick="orderDrinkByKey('drink2', 7)">Encomendar</button>
+          <div class="menu-actions">
+            <div class="menu-qty">
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink2', -1)">−</button>
+              <span class="menu-qty-num" id="drink2Qty">0</span>
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink2', 1)">+</button>
+            </div>
+            <button type="button" class="btn-order" id="drink2Btn" onclick="orderDrinkByKey('drink2', 7)">Encomendar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -352,7 +418,14 @@
         </div>
         <div class="drink-bottom">
           <div class="drink-price">€10 <span>/ un.</span></div>
-          <button type="button" class="btn-order" id="drink3Btn" onclick="orderDrinkByKey('drink3', 10)">Encomendar</button>
+          <div class="menu-actions">
+            <div class="menu-qty">
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink3', -1)">−</button>
+              <span class="menu-qty-num" id="drink3Qty">0</span>
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink3', 1)">+</button>
+            </div>
+            <button type="button" class="btn-order" id="drink3Btn" onclick="orderDrinkByKey('drink3', 10)">Encomendar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -368,7 +441,14 @@
         </div>
         <div class="drink-bottom">
           <div class="drink-price">€8 <span>/ un.</span></div>
-          <button type="button" class="btn-order" id="drink4Btn" onclick="orderDrinkByKey('drink4', 8)">Encomendar</button>
+          <div class="menu-actions">
+            <div class="menu-qty">
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink4', -1)">−</button>
+              <span class="menu-qty-num" id="drink4Qty">0</span>
+              <button type="button" class="menu-qty-btn" onclick="changeQty('drink4', 1)">+</button>
+            </div>
+            <button type="button" class="btn-order" id="drink4Btn" onclick="orderDrinkByKey('drink4', 8)">Encomendar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -383,10 +463,8 @@
   <div class="checkout-body">
     <div class="order-summary">
       <div class="summary-label" id="summaryLabelText">Resumo</div>
-      <div class="summary-row">
-        <span id="checkout-drink-name">—</span>
-        <span id="checkout-drink-price" style="color:var(--coral); font-weight:600">—</span>
-      </div>
+      <div class="cart-items" id="checkout-items"></div>
+      <div class="cart-empty" id="checkout-empty">Ainda não escolheste bebidas.</div>
       <div class="summary-row" id="summaryNoteText" style="border:0; color:var(--muted); font-size:0.8rem">Copo reutilizável, embalagem incluída.</div>
       <div class="summary-total">
         <span class="total-label" id="totalLabelText">Total</span>
@@ -459,8 +537,8 @@
 <script>
   let ageConfirmed = false;
   let selectedDrink = '';
-  let selectedDrinkKey = '';
   let selectedPrice = 0;
+  const cart = {};
   let lang = localStorage.getItem('lang') || 'pt';
   let currentOrder = null; // { id, client_token, nome, first }
   let timerInterval = null;
@@ -478,6 +556,7 @@
       ageWarning: 'Confirma a idade para encomendar.',
       menu: 'Menu',
       orderBtn: 'Encomendar',
+      addBtn: 'Adicionar',
       drink1Name: 'A Espanhola',
       drink1Desc: 'Vinho tinto, leite condensado e morango congelado batido.',
       drink2Name: 'Caipirinha de Vodka',
@@ -529,6 +608,9 @@
       greetReady: 'Aí vem! ',
       greetPending: 'Bora, ',
       paymentCancel: 'O pagamento foi cancelado. Queres tentar de novo?'
+      ,cartEmpty: 'Ainda não escolheste bebidas.',
+      itemUnits: 'un.',
+      ageConfirmPrompt: 'Confirmas que tens 18+ para continuar?'
     },
     en: {
       languageLabel: 'Language',
@@ -539,6 +621,7 @@
       ageWarning: 'Confirm your age to place an order.',
       menu: 'Menu',
       orderBtn: 'Order',
+      addBtn: 'Add',
       drink1Name: 'A Espanhola',
       drink1Desc: 'Red wine, condensed milk and blended frozen strawberry.',
       drink2Name: 'Vodka Caipirinha',
@@ -589,7 +672,10 @@
       waitingReadyFallback: 'Come pick up! 🍹',
       greetReady: 'Here it comes! ',
       greetPending: 'Let’s go, ',
-      paymentCancel: 'Payment was canceled. Want to try again?'
+      paymentCancel: 'Payment was canceled. Want to try again?',
+      cartEmpty: 'You have not selected any drinks yet.',
+      itemUnits: 'pcs',
+      ageConfirmPrompt: 'Do you confirm you are 18+ to continue?'
     },
     fr: {
       languageLabel: 'Langue',
@@ -600,6 +686,7 @@
       ageWarning: 'Confirmez votre âge pour commander.',
       menu: 'Menu',
       orderBtn: 'Commander',
+      addBtn: 'Ajouter',
       drink1Name: 'A Espanhola',
       drink1Desc: 'Vin rouge, lait concentré et fraise surgelée mixée.',
       drink2Name: 'Caipirinha à la Vodka',
@@ -650,7 +737,10 @@
       waitingReadyFallback: 'Venez récupérer ! 🍹',
       greetReady: 'Ça arrive ! ',
       greetPending: 'Allez, ',
-      paymentCancel: 'Le paiement a été annulé. Voulez-vous réessayer ?'
+      paymentCancel: 'Le paiement a été annulé. Voulez-vous réessayer ?',
+      cartEmpty: 'Vous n’avez pas encore sélectionné de boissons.',
+      itemUnits: 'pcs',
+      ageConfirmPrompt: 'Confirmez-vous avoir 18 ans ou plus pour continuer ?'
     }
   };
   const tr = (k) => (I18N[lang] && I18N[lang][k]) || I18N.pt[k] || k;
@@ -683,6 +773,7 @@
     set('backBtnText', 'backBtn');
     set('checkoutTitleText', 'checkoutTitle');
     set('summaryLabelText', 'summary');
+    set('checkout-empty', 'cartEmpty');
     set('summaryNoteText', 'summaryNote');
     set('totalLabelText', 'total');
     set('nameLabelText', 'nameLabel');
@@ -710,10 +801,7 @@
       set('waiting-line2', 'waitingLine2');
       set('mbBubble', 'mbBubble');
     }
-    if (selectedDrinkKey) {
-      selectedDrink = tr(selectedDrinkKey + 'Name');
-      document.getElementById('checkout-drink-name').textContent = selectedDrink;
-    }
+    renderCart();
   }
 
   function setLanguage(next) {
@@ -733,6 +821,78 @@
     return qs('.method-option.selected') && qs('.method-option.selected').getAttribute('data-pay') === 'card';
   }
 
+  function drinkPriceByKey(k) {
+    if (k === 'drink1') return 8;
+    if (k === 'drink2') return 7;
+    if (k === 'drink3') return 10;
+    if (k === 'drink4') return 8;
+    return 0;
+  }
+
+  function cartCount() {
+    return Object.values(cart).reduce((acc, q) => acc + q, 0);
+  }
+
+  function cartTotal() {
+    return Object.keys(cart).reduce((acc, key) => acc + (drinkPriceByKey(key) * cart[key]), 0);
+  }
+
+  function cartOrderLabel() {
+    return Object.keys(cart)
+      .filter((key) => cart[key] > 0)
+      .map((key) => tr(key + 'Name') + ' x' + cart[key])
+      .join(', ');
+  }
+
+  function renderCart() {
+    const box = document.getElementById('checkout-items');
+    const empty = document.getElementById('checkout-empty');
+    if (!box || !empty) return;
+    const keys = Object.keys(cart).filter((k) => cart[k] > 0);
+    box.innerHTML = '';
+    if (!keys.length) {
+      empty.style.display = 'block';
+      document.getElementById('checkout-total').textContent = '€0';
+      renderMenuQty();
+      return;
+    }
+    empty.style.display = 'none';
+    keys.forEach((key) => {
+      const qty = cart[key];
+      const unit = drinkPriceByKey(key);
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      row.innerHTML = `
+        <div>
+          <div class="cart-item-name">${tr(key + 'Name')}</div>
+          <div class="cart-item-meta">€${unit} / ${tr('itemUnits')}</div>
+        </div>
+        <div class="qty-box">
+          <button type="button" class="qty-btn" onclick="changeQty('${key}', -1)">−</button>
+          <span class="qty-num">${qty}</span>
+          <button type="button" class="qty-btn" onclick="changeQty('${key}', 1)">+</button>
+        </div>
+      `;
+      box.appendChild(row);
+    });
+    document.getElementById('checkout-total').textContent = '€' + cartTotal();
+    renderMenuQty();
+  }
+
+  function renderMenuQty() {
+    ['drink1', 'drink2', 'drink3', 'drink4'].forEach((key) => {
+      const el = document.getElementById(key + 'Qty');
+      if (el) el.textContent = String(cart[key] || 0);
+    });
+  }
+
+  function changeQty(key, delta) {
+    const next = (cart[key] || 0) + delta;
+    if (next <= 0) delete cart[key];
+    else cart[key] = next;
+    renderCart();
+  }
+
   function toggleAge() {
     ageConfirmed = !ageConfirmed;
     const box = document.getElementById('ageCheck');
@@ -743,15 +903,21 @@
 
   function orderDrinkByKey(drinkKey, price) {
     if (!ageConfirmed) {
-      document.getElementById('ageWarning').classList.add('show');
-      return;
+      const ok = window.confirm(tr('ageConfirmPrompt'));
+      if (!ok) {
+        document.getElementById('ageWarning').classList.add('show');
+        return;
+      }
+      ageConfirmed = true;
+      const box = document.getElementById('ageCheck');
+      box.classList.add('checked');
+      box.setAttribute('aria-checked', 'true');
+      document.getElementById('ageWarning').classList.remove('show');
     }
-    selectedDrinkKey = drinkKey;
-    selectedDrink = tr(drinkKey + 'Name');
-    selectedPrice = price;
-    document.getElementById('checkout-drink-name').textContent = selectedDrink;
-    document.getElementById('checkout-drink-price').textContent = '€' + price;
-    document.getElementById('checkout-total').textContent = '€' + price;
+    if (!cart[drinkKey]) cart[drinkKey] = 1;
+    selectedDrink = cartOrderLabel();
+    selectedPrice = cartTotal();
+    renderCart();
     goTo('checkout');
   }
 
@@ -770,7 +936,9 @@
       document.getElementById('customerName').focus();
       return;
     }
-    if (!selectedDrink) return;
+    if (cartCount() === 0) return;
+    selectedDrink = cartOrderLabel();
+    selectedPrice = cartTotal();
     const isCard = paymentIsCard();
     if (isCard) {
       document.getElementById('btnPay').disabled = true;
@@ -937,10 +1105,14 @@
   function resetAll() {
     clearTimers();
     currentOrder = null;
+    Object.keys(cart).forEach((k) => delete cart[k]);
+    selectedDrink = '';
+    selectedPrice = 0;
     sessionStorage.removeItem('o');
     sessionStorage.removeItem('ep');
     document.getElementById('readyMessage').classList.remove('show');
     document.getElementById('mbBubble').classList.remove('show');
+    renderCart();
     goTo('menu');
   }
 
