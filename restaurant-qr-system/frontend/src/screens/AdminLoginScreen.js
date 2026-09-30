@@ -9,6 +9,7 @@ const AdminLoginScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const navigate = useNavigate();
   const setAuthenticated = useStore((state) => state.setAuthenticated);
@@ -17,6 +18,7 @@ const AdminLoginScreen = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLocalError('');
     try {
       setLoading(true);
       const result = await authService.loginRestaurant(email, password);
@@ -24,7 +26,9 @@ const AdminLoginScreen = () => {
       setSuccess('Login realizado com sucesso!');
       navigate('/admin/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao fazer login');
+      const msg = err.response?.data?.error || err.message || 'Erro ao fazer login';
+      setLocalError(msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -32,6 +36,7 @@ const AdminLoginScreen = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setLocalError('');
     try {
       setLoading(true);
       const result = await authService.registerRestaurant(formData);
@@ -39,7 +44,9 @@ const AdminLoginScreen = () => {
       setSuccess('Restaurante registrado com sucesso!');
       navigate('/admin/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao registrar');
+      const msg = err.response?.data?.error || err.message || 'Erro ao registrar';
+      setLocalError(msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -49,6 +56,21 @@ const AdminLoginScreen = () => {
     <div className="admin-login-screen">
       <div className="login-container">
         <h1>🍽️ Restaurant QR System</h1>
+
+        {localError && (
+          <div style={{
+            background: '#fee2e2',
+            border: '1px solid #fca5a5',
+            color: '#dc2626',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            ⚠️ {localError}
+          </div>
+        )}
 
         {isLogin ? (
           <form onSubmit={handleLogin}>

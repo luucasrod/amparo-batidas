@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+  const secret = process.env.JWT_SECRET || 'restaurant-qr-default-secret-2026';
+  return jwt.sign({ id }, secret, { expiresIn: '24h' });
 };
 
 const hashPassword = async (password) => {

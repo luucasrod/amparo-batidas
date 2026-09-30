@@ -2,17 +2,20 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/build",
   "env": {
-    "REACT_APP_API_URL": "@api_url",
-    "REACT_APP_SUPABASE_URL": "@supabase_url",
-    "REACT_APP_SUPABASE_KEY": "@supabase_key",
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_KEY": "@supabase_key",
-    "JWT_SECRET": "@jwt_secret"
+    "REACT_APP_API_URL": "/api",
+    "REACT_APP_SUPABASE_URL": "https://kyrkdtgrghqopbmhlwfj.supabase.co",
+    "REACT_APP_SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5cmtkdGdyZ2hxb3BibWhsd2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzY4NTYsImV4cCI6MjEwNjM1Mjg1Nn0.AZ3gXChCWLwMS0eqrkG8QL0mOVXLPfwAeMgnO86ILO4",
+    "SUPABASE_URL": "https://kyrkdtgrghqopbmhlwfj.supabase.co",
+    "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5cmtkdGdyZ2hxb3BibWhsd2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NzY4NTYsImV4cCI6MjEwNjM1Mjg1Nn0.AZ3gXChCWLwMS0eqrkG8QL0mOVXLPfwAeMgnO86ILO4"
   },
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/:path+", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }

@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const supabase = require('../config/supabaseClient');
 
 const createPayment = async (req, res) => {
   try {
@@ -8,12 +8,21 @@ const createPayment = async (req, res) => {
       return res.status(400).json({ error: 'Order ID, customer name and amount are required' });
     }
 
-    const result = await pool.query(
-      'INSERT INTO payments (order_id, customer_name, amount, payment_method, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [order_id, customer_name, amount, payment_method || 'cash', 'completed']
-    );
+    const { data, error } = await supabase
+      .from('payments')
+      .insert({
+        order_id,
+        customer_name,
+        amount,
+        payment_method: payment_method || 'cash',
+        status: 'completed',
+      })
+      .select()
+      .single();
 
-    res.status(201).json(result.rows[0]);
+    if (error) throw error;
+
+    res.status(201).json(data);
   } catch (error) {
     console.error('Error creating payment:', error);
     res.status(500).json({ error: error.message });
@@ -24,12 +33,15 @@ const getPaymentsByOrder = async (req, res) => {
   try {
     const { order_id } = req.params;
 
-    const result = await pool.query(
-      'SELECT * FROM payments WHERE order_id = $1 ORDER BY created_at DESC',
-      [order_id]
-    );
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('order_id', order_id)
+      .order('created_at', { ascending: false });
 
-    res.json(result.rows);
+    if (error) throw error;
+
+    res.json(data);
   } catch (error) {
     console.error('Error getting payments:', error);
     res.status(500).json({ error: error.message });
@@ -40,22 +52,21 @@ const getOrderTotal = async (req, res) => {
   try {
     const { order_id } = req.params;
 
-    const result = await pool.query(
-      'SELECT SUM(amount) as total FROM payments WHERE order_id = $1 AND status = $2',
-      [order_id, 'completed']
-    );
+    const { data, error } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('order_id', order_id)
+      .eq('status', 'completed');
 
-    const total = result.rows[0].total || 0;
+    if (error) throw error;
 
-    res.json({ total: parseFloat(total) });
+    const total = data.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+    res.json({ total: parseFloat(total.toFixed(2)) });
   } catch (error) {
     console.error('Error getting order total:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = {
-  createPayment,
-  getPaymentsByOrder,
-  getOrderTotal,
-};
+module.exports = { createPayment, getPaymentsByOrder, getOrderTotal };

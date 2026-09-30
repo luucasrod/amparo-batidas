@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const supabase = require('../config/supabaseClient');
 const { v4: uuidv4 } = require('uuid');
 
 const createOrder = async (req, res) => {
@@ -11,20 +11,30 @@ const createOrder = async (req, res) => {
 
     const sessionId = uuidv4();
 
-    const tableResult = await pool.query('SELECT restaurant_id FROM tables WHERE id = $1', [table_id]);
+    const { data: tableData, error: tableError } = await supabase
+      .from('tables')
+      .select('restaurant_id')
+      .eq('id', table_id)
+      .single();
 
-    if (tableResult.rows.length === 0) {
+    if (tableError || !tableData) {
       return res.status(404).json({ error: 'Table not found' });
     }
 
-    const restaurantId = tableResult.rows[0].restaurant_id;
+    const { data, error } = await supabase
+      .from('orders')
+      .insert({
+        table_id,
+        restaurant_id: tableData.restaurant_id,
+        session_id: sessionId,
+        status: 'open',
+      })
+      .select()
+      .single();
 
-    const result = await pool.query(
-      'INSERT INTO orders (table_id, restaurant_id, session_id, status) VALUES ($1, $2, $3, $4) RETURNING *',
-      [table_id, restaurantId, sessionId, 'open']
-    );
+    if (error) throw error;
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(data);
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ error: error.message });
@@ -39,20 +49,32 @@ const addOrderItem = async (req, res) => {
       return res.status(400).json({ error: 'Order ID, menu item ID and customer name are required' });
     }
 
-    const menuResult = await pool.query('SELECT price FROM menu_items WHERE id = $1', [menu_item_id]);
+    const { data: menuData, error: menuError } = await supabase
+      .from('menu_items')
+      .select('price')
+      .eq('id', menu_item_id)
+      .single();
 
-    if (menuResult.rows.length === 0) {
+    if (menuError || !menuData) {
       return res.status(404).json({ error: 'Menu item not found' });
     }
 
-    const price = menuResult.rows[0].price;
+    const { data, error } = await supabase
+      .from('order_items')
+      .insert({
+        order_id,
+        menu_item_id,
+        customer_name,
+        quantity: quantity || 1,
+        price: menuData.price,
+        notes,
+      })
+      .select()
+      .single();
 
-    const result = await pool.query(
-      'INSERT INTO order_items (order_id, menu_item_id, customer_name, quantity, price, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [order_id, menu_item_id, customer_name, quantity || 1, price, notes]
-    );
+    if (error) throw error;
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(data);
   } catch (error) {
     console.error('Error adding order item:', error);
     res.status(500).json({ error: error.message });
@@ -63,28 +85,34 @@ const getOrderDetails = async (req, res) => {
   try {
     const { order_id } = req.params;
 
-    const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [order_id]);
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', order_id)
+      .single();
 
-    if (orderResult.rows.length === 0) {
+    if (orderError || !order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    const itemsResult = await pool.query(
-      `SELECT oi.*, mi.name as item_name
-       FROM order_items oi
-       JOIN menu_items mi ON oi.menu_item_id = mi.id
-       WHERE oi.order_id = $1`,
-      [order_id]
-    );
+    const { data: items, error: itemsError } = await supabase
+      .from('order_items')
+      .select('*, menu_items(name)')
+      .eq('order_id', order_id);
 
-    const order = orderResult.rows[0];
-    const items = itemsResult.rows;
+    if (itemsError) throw itemsError;
 
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const flatItems = items.map((item) => ({
+      ...item,
+      item_name: item.menu_items?.name,
+      menu_items: undefined,
+    }));
+
+    const total = flatItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     res.json({
       ...order,
-      items,
+      items: flatItems,
       total: parseFloat(total.toFixed(2)),
     });
   } catch (error) {
@@ -97,19 +125,25 @@ const getOrderItemsByCustomer = async (req, res) => {
   try {
     const { order_id, customer_name } = req.params;
 
-    const result = await pool.query(
-      `SELECT oi.*, mi.name as item_name
-       FROM order_items oi
-       JOIN menu_items mi ON oi.menu_item_id = mi.id
-       WHERE oi.order_id = $1 AND oi.customer_name = $2`,
-      [order_id, customer_name]
-    );
+    const { data: items, error } = await supabase
+      .from('order_items')
+      .select('*, menu_items(name)')
+      .eq('order_id', order_id)
+      .eq('customer_name', customer_name);
 
-    const total = result.rows.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (error) throw error;
+
+    const flatItems = items.map((item) => ({
+      ...item,
+      item_name: item.menu_items?.name,
+      menu_items: undefined,
+    }));
+
+    const total = flatItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     res.json({
       customer_name,
-      items: result.rows,
+      items: flatItems,
       total: parseFloat(total.toFixed(2)),
     });
   } catch (error) {
@@ -122,16 +156,18 @@ const markItemAsPaymentPending = async (req, res) => {
   try {
     const { item_id } = req.params;
 
-    const result = await pool.query(
-      'UPDATE order_items SET is_paid = true WHERE id = $1 RETURNING *',
-      [item_id]
-    );
+    const { data, error } = await supabase
+      .from('order_items')
+      .update({ is_paid: true })
+      .eq('id', item_id)
+      .select()
+      .single();
 
-    if (result.rows.length === 0) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Order item not found' });
     }
 
-    res.json(result.rows[0]);
+    res.json(data);
   } catch (error) {
     console.error('Error marking item as paid:', error);
     res.status(500).json({ error: error.message });
@@ -142,12 +178,15 @@ const getOrdersByTable = async (req, res) => {
   try {
     const { table_id } = req.params;
 
-    const result = await pool.query(
-      'SELECT * FROM orders WHERE table_id = $1 ORDER BY created_at DESC',
-      [table_id]
-    );
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('table_id', table_id)
+      .order('created_at', { ascending: false });
 
-    res.json(result.rows);
+    if (error) throw error;
+
+    res.json(data);
   } catch (error) {
     console.error('Error getting orders:', error);
     res.status(500).json({ error: error.message });
@@ -158,16 +197,18 @@ const closeOrder = async (req, res) => {
   try {
     const { order_id } = req.params;
 
-    const result = await pool.query(
-      'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
-      ['closed', order_id]
-    );
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status: 'closed' })
+      .eq('id', order_id)
+      .select()
+      .single();
 
-    if (result.rows.length === 0) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    res.json(result.rows[0]);
+    res.json(data);
   } catch (error) {
     console.error('Error closing order:', error);
     res.status(500).json({ error: error.message });

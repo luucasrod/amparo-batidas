@@ -8,7 +8,7 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'restaurant-qr-default-secret-2026');
     req.restaurantId = decoded.id;
     next();
   } catch (error) {

@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const supabase = require('../config/supabaseClient');
 
 const createRating = async (req, res) => {
   try {
@@ -12,20 +12,31 @@ const createRating = async (req, res) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
 
-    const orderResult = await pool.query('SELECT restaurant_id FROM orders WHERE id = $1', [order_id]);
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .select('restaurant_id')
+      .eq('id', order_id)
+      .single();
 
-    if (orderResult.rows.length === 0) {
+    if (orderError || !orderData) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    const restaurantId = orderResult.rows[0].restaurant_id;
+    const { data, error } = await supabase
+      .from('ratings')
+      .insert({
+        restaurant_id: orderData.restaurant_id,
+        order_id,
+        customer_name,
+        rating,
+        comment,
+      })
+      .select()
+      .single();
 
-    const result = await pool.query(
-      'INSERT INTO ratings (restaurant_id, order_id, customer_name, rating, comment) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [restaurantId, order_id, customer_name, rating, comment]
-    );
+    if (error) throw error;
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(data);
   } catch (error) {
     console.error('Error creating rating:', error);
     res.status(500).json({ error: error.message });
@@ -36,23 +47,24 @@ const getRestaurantRatings = async (req, res) => {
   try {
     const { restaurantId } = req.params;
 
-    const result = await pool.query(
-      'SELECT * FROM ratings WHERE restaurant_id = $1 ORDER BY created_at DESC',
-      [restaurantId]
-    );
+    const { data: ratings, error } = await supabase
+      .from('ratings')
+      .select('*')
+      .eq('restaurant_id', restaurantId)
+      .order('created_at', { ascending: false });
 
-    const averageResult = await pool.query(
-      'SELECT AVG(rating) as average_rating, COUNT(*) as total_ratings FROM ratings WHERE restaurant_id = $1',
-      [restaurantId]
-    );
+    if (error) throw error;
 
-    const stats = averageResult.rows[0];
+    const total = ratings.length;
+    const average = total > 0
+      ? ratings.reduce((sum, r) => sum + r.rating, 0) / total
+      : 0;
 
     res.json({
-      ratings: result.rows,
+      ratings,
       statistics: {
-        average_rating: stats.average_rating ? parseFloat(stats.average_rating.toFixed(2)) : 0,
-        total_ratings: parseInt(stats.total_ratings),
+        average_rating: parseFloat(average.toFixed(2)),
+        total_ratings: total,
       },
     });
   } catch (error) {
@@ -63,23 +75,24 @@ const getRestaurantRatings = async (req, res) => {
 
 const getRestaurantRatingsAuth = async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM ratings WHERE restaurant_id = $1 ORDER BY created_at DESC',
-      [req.restaurantId]
-    );
+    const { data: ratings, error } = await supabase
+      .from('ratings')
+      .select('*')
+      .eq('restaurant_id', req.restaurantId)
+      .order('created_at', { ascending: false });
 
-    const averageResult = await pool.query(
-      'SELECT AVG(rating) as average_rating, COUNT(*) as total_ratings FROM ratings WHERE restaurant_id = $1',
-      [req.restaurantId]
-    );
+    if (error) throw error;
 
-    const stats = averageResult.rows[0];
+    const total = ratings.length;
+    const average = total > 0
+      ? ratings.reduce((sum, r) => sum + r.rating, 0) / total
+      : 0;
 
     res.json({
-      ratings: result.rows,
+      ratings,
       statistics: {
-        average_rating: stats.average_rating ? parseFloat(stats.average_rating.toFixed(2)) : 0,
-        total_ratings: parseInt(stats.total_ratings),
+        average_rating: parseFloat(average.toFixed(2)),
+        total_ratings: total,
       },
     });
   } catch (error) {
@@ -88,8 +101,4 @@ const getRestaurantRatingsAuth = async (req, res) => {
   }
 };
 
-module.exports = {
-  createRating,
-  getRestaurantRatings,
-  getRestaurantRatingsAuth,
-};
+module.exports = { createRating, getRestaurantRatings, getRestaurantRatingsAuth };
