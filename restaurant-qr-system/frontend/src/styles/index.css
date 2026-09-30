@@ -15,23 +15,28 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-lighter);
   min-height: 100vh;
+  color: var(--text-primary);
 }
 
 :root {
-  --primary-color: #667eea;
-  --secondary-color: #764ba2;
-  --success-color: #48bb78;
-  --error-color: #f56565;
-  --warning-color: #ed8936;
-  --text-primary: #1a202c;
-  --text-secondary: #4a5568;
-  --border-color: #e2e8f0;
-  --bg-light: #f7fafc;
+  --primary-color: #1f2937;
+  --secondary-color: #10b981;
+  --accent-color: #f59e0b;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-light: #9ca3af;
+  --border-color: #e5e7eb;
+  --bg-light: #f9fafb;
+  --bg-lighter: #f3f4f6;
   --bg-white: #ffffff;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.12);
 }
 
 input, textarea, select, button {
@@ -64,24 +69,26 @@ button {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--secondary-color);
   color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
 
+.btn-primary:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
 .btn-secondary {
-  background: var(--bg-light);
+  background: var(--bg-white);
   color: var(--text-primary);
-  border: 2px solid var(--primary-color);
+  border: 1.5px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  background: var(--primary-color);
-  color: white;
+  background: var(--bg-light);
+  border-color: var(--secondary-color);
 }
 
 button:disabled {

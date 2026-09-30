@@ -8,12 +8,13 @@
 }
 
 .login-container {
-  background: white;
-  border-radius: 16px;
+  background: var(--bg-white);
+  border-radius: 12px;
   box-shadow: var(--shadow-lg);
-  padding: 40px;
+  padding: 48px;
   width: 100%;
   max-width: 420px;
+  border: 1px solid var(--border-color);
 }
 
 .login-container h1 {
@@ -40,22 +41,35 @@
 
 .login-container button[type="submit"] {
   width: 100%;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--secondary-color);
   color: white;
-  margin-top: 10px;
+  margin-top: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.login-container button[type="submit"]:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .link-button {
   background: none;
   border: none;
-  color: var(--primary-color);
+  color: var(--secondary-color);
   padding: 0;
-  text-decoration: underline;
+  text-decoration: none;
   cursor: pointer;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .link-button:hover {
-  opacity: 0.8;
+  color: #059669;
+  text-decoration: underline;
 }
 
 /* Admin Dashboard */
@@ -67,10 +81,11 @@
 }
 
 .dashboard-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: white;
-  padding: 30px;
-  box-shadow: var(--shadow);
+  padding: 32px 30px;
+  box-shadow: var(--shadow-md);
+  border-bottom: 3px solid var(--secondary-color);
 }
 
 .header-content {
@@ -93,14 +108,16 @@
 }
 
 .header-actions button {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
-  border: 2px solid white;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
   padding: 8px 16px;
+  transition: all 0.3s ease;
 }
 
 .header-actions button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: white;
 }
 
 .dashboard-tabs {
@@ -126,8 +143,8 @@
 }
 
 .dashboard-tabs button.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
+  color: var(--secondary-color);
+  border-bottom-color: var(--secondary-color);
 }
 
 .dashboard-content {
@@ -139,10 +156,16 @@
 }
 
 .section {
-  background: white;
+  background: var(--bg-white);
   border-radius: 12px;
-  padding: 30px;
+  padding: 32px;
   box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: box-shadow 0.3s ease;
+}
+
+.section:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .section-header {
@@ -164,11 +187,19 @@
 }
 
 .table-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
   color: white;
   border-radius: 12px;
   padding: 20px;
   text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.table-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 .table-card h3 {
@@ -216,11 +247,13 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
   color: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px 20px;
   text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .stat-card h3 {
@@ -240,10 +273,16 @@
 }
 
 .rating-item {
-  background: var(--bg-light);
-  border-left: 4px solid var(--primary-color);
-  padding: 15px;
+  background: var(--bg-white);
+  border-left: 4px solid var(--secondary-color);
+  padding: 16px;
   border-radius: 8px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.3s ease;
+}
+
+.rating-item:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .rating-header {
@@ -284,12 +323,13 @@
 }
 
 .screen-content {
-  background: white;
+  background: var(--bg-white);
   border-radius: 16px;
   box-shadow: var(--shadow-lg);
-  padding: 30px;
+  padding: 32px;
   max-width: 600px;
   margin: 0 auto;
+  border: 1px solid var(--border-color);
 }
 
 /* QR Scanner */
@@ -341,16 +381,18 @@
 }
 
 .menu-item {
-  background: var(--bg-light);
+  background: var(--bg-white);
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: var(--shadow);
 }
 
 .menu-item:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--secondary-color);
 }
 
 .menu-item img {
@@ -375,9 +417,9 @@
 }
 
 .price {
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: var(--primary-color);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--secondary-color);
 }
 
 .item-actions {
@@ -412,11 +454,17 @@
 
 /* Order Summary */
 .order-summary {
-  background: linear-gradient(135deg, var(--bg-light), white);
+  background: var(--bg-white);
   border: 2px solid var(--border-color);
   border-radius: 12px;
-  padding: 20px;
-  margin-top: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.3s ease;
+}
+
+.order-summary:hover {
+  border-color: var(--secondary-color);
 }
 
 .order-summary h2 {
@@ -438,22 +486,32 @@
 }
 
 .summary-total {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
   color: white;
-  padding: 15px;
+  padding: 18px;
   border-radius: 8px;
   text-align: right;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
 }
 
 .pay-button {
   width: 100%;
-  background: linear-gradient(135deg, #48bb78, #38a169);
+  background: var(--secondary-color);
   color: white;
-  padding: 15px;
+  padding: 16px;
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.pay-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* Customer Name Form */
@@ -520,8 +578,8 @@
 
 .rating-stars .star:hover,
 .rating-stars .star.active {
-  color: #ffd700;
-  transform: scale(1.2);
+  color: var(--accent-color);
+  transform: scale(1.25);
 }
 
 .rating-form textarea {
@@ -531,8 +589,16 @@
 
 .submit-button {
   width: 100%;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--secondary-color);
   color: white;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .rating-container {
