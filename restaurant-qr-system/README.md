@@ -1,5 +1,7 @@
 # 🍽️ Restaurant QR System
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fluucasrod%2Famparo-batidas&root=restaurant-qr-system%2Ffrontend&project-name=amparo-restaurant-qr&repo-name=amparo-restaurant-qr&env=REACT_APP_SUPABASE_URL,REACT_APP_SUPABASE_KEY,REACT_APP_API_URL&envDescription=Supabase%20credentials%20-%20see%20READY.md&demo-title=Restaurant%20QR%20System&demo-description=QR%20Code%20ordering%20system%20for%20restaurants)
+
 Sistema completo de pedidos e pagamento por QR Code para restaurantes. Permite que clientes escaneem QR codes nas mesas, visualizem o menu, façam pedidos e paguem individualmente, além de automatizar avaliações do restaurante.
 
 ## 🎯 Funcionalidades
