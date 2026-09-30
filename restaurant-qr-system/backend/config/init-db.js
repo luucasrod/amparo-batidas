@@ -4,6 +4,16 @@ const initDB = async () => {
   try {
     console.log('Initializing database...');
 
+    // Check if we can connect
+    try {
+      await pool.query('SELECT 1');
+      console.log('✅ Database connection successful');
+    } catch (err) {
+      console.warn('⚠️  Database connection unavailable, using Supabase SDK mode');
+      console.warn('💡 Tables should already exist in Supabase');
+      return;
+    }
+
     // Create restaurants table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS restaurants (
